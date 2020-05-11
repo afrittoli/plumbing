@@ -57,3 +57,15 @@ spec:
         - name: tekton-ci-webhook-comment
       template:
         name: tekton-ci-pipeline
+    - name: trigger-check-pr-labels
+      interceptors:
+        - cel:
+            filter: >
+              header.match('X-GitHub-Event', 'pull_request') &&
+              (body.action == 'opened' ||
+              ((body.action == 'labeled' || body.action == 'unlabeled')
+              && body.label.name.contains('kind')))
+      bindings:
+        - name: trigger-to-check-pr-labels
+      template:
+        name: check-pull-request-labels
