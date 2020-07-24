@@ -20,5 +20,7 @@ set -o pipefail
 # Workaround for https://github.com/google/licenseclassifier/issues/20
 git clone https://github.com/google/licenseclassifier ${GOPATH}/src/github.com/google/licenseclassifier
 
+echo "Hello, world"
+
 # actually start bootstrap and the job, under the runner (which handles dind etc.)
 /usr/local/bin/runner.sh "$@"
