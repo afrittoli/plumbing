@@ -22,6 +22,27 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
+  name: tekton-ci-pipelinerun-cloudevent
+spec:
+  params:
+  - name: pullRequestNumber
+    value: $(body.pipelineRun.metadata.labels.tekton\.dev/pr-number)
+  - name: gitURL
+    value: $(body.pipelineRun.metadata.annotations.tekton\.dev/gitURL)
+  - name: buildUUID
+    value: $(body.pipelineRun.metadata.labels.prow\.k8s\.io/build-id)
+  - name: checkName
+    value: $(body.pipelineRun.metadata.labels.tekton\.dev/check-name)
+  - name: checkResult
+    value: $(body.pipelineRun.status.conditions[?(@.type == 'Succeeded')].status)
+  - name: pipelineRunName
+    value: $(body.pipelineRun.metadata.name)
+  - name: pipelineRunNamespace
+    value: $(body.pipelineRun.metadata.namespace)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
   name: tekton-ci-check-pending
 spec:
   params:
@@ -40,3 +61,34 @@ spec:
     value: complete
   - name: checkDescription
     value: "Job Finished."
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: meta-from-taskrun
+spec:
+  params:
+  - name: resourceName
+    value: $(body.taskRun.metadata.name)
+  - name: resourceNamespace
+    value: $(body.taskRun.metadata.namespace)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: meta-from-pipelinerun
+spec:
+  params:
+  - name: resourceName
+    value: $(body.pipelineRun.metadata.name)
+  - name: resourceNamespace
+    value: $(body.pipelineRun.metadata.namespace)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: ce-type
+spec:
+  params:
+  - name: ceType
+    value: $(header.ce-type)

@@ -101,12 +101,11 @@ spec:
       interceptors:
         - cel:
             filter: >-
-              header.match('ce-type', 'dev.tekton.event.taskrun.started.v1') &&
-              body.taskRun.metadata.labels['triggers.tekton.dev/eventlistener'] == 'tekton-ci-webhook' &&
-              body.taskRun.metadata.labels['tekton.dev/kind'] == 'ci' &&
-              !('tekton.dev/conditionName' in body.taskRun.metadata.labels)
+              header.match('ce-type', 'dev.tekton.event.pipelinerun.started.v1') &&
+              body.pipelineRun.metadata.labels['triggers.tekton.dev/eventlistener'] == 'tekton-ci-webhook' &&
+              body.pipelineRun.metadata.labels['tekton.dev/kind'] == 'ci'
       bindings:
-        - ref: tekton-ci-taskrun-cloudevent
+        - ref: tekton-ci-pipelinerun-cloudevent
         - ref: tekton-ci-check-pending
       template:
         name: tekton-ci-github-check-update
@@ -114,13 +113,35 @@ spec:
       interceptors:
         - cel:
             filter: >-
-              (header.match('ce-type', 'dev.tekton.event.taskrun.successful.v1') ||
-              header.match('ce-type', 'dev.tekton.event.taskrun.failed.v1')) &&
-              body.taskRun.metadata.labels['triggers.tekton.dev/eventlistener'] == 'tekton-ci-webhook' &&
-              body.taskRun.metadata.labels['tekton.dev/kind'] == 'ci' &&
-              !('tekton.dev/conditionName' in body.taskRun.metadata.labels)
+              (header.match('ce-type', 'dev.tekton.event.pipelinerun.successful.v1') ||
+              header.match('ce-type', 'dev.tekton.event.pipelinerun.failed.v1')) &&
+              body.pipelineRun.metadata.labels['triggers.tekton.dev/eventlistener'] == 'tekton-ci-webhook' &&
+              body.pipelineRun.metadata.labels['tekton.dev/kind'] == 'ci'
       bindings:
-        - ref: tekton-ci-taskrun-cloudevent
+        - ref: tekton-ci-pipelinerun-cloudevent
         - ref: tekton-ci-check-complete
       template:
         name: tekton-ci-github-check-update
+    # - name: debug-taskrun
+    #   interceptors:
+    #     - cel:
+    #         filter: >-
+    #           'taskRun' in body &&
+    #           !('debug.tekton.dev/ce-type' in body.taskRun.metadata.annotations)
+    #   bindings:
+    #     - ref: meta-from-taskrun
+    #     - ref: ce-type
+    #   template:
+    #     name: debug-ce-events
+    # - name: debug-pipelinerun
+    #   interceptors:
+    #     - cel:
+    #         filter: >-
+    #           'pipelineRun' in body &&
+    #           (!('annotations' in body.pipelineRun.metadata) ||
+    #           !('debug.tekton.dev/ce-type' in body.pipelineRun.metadata.annotations))
+    #   bindings:
+    #     - ref: meta-from-pipelinerun
+    #     - ref: ce-type
+    #   template:
+    #     name: debug-ce-events

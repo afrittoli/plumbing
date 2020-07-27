@@ -19,9 +19,9 @@ spec:
     description: A description to be displayed for the status of the check
   - name: checkResult
     description: Whether the triggering event was successful or not
-  - name: taskRunName
+  - name: pipelineRunName
     description: The name of the task run that triggered this
-  - name: taskRunNamespace
+  - name: pipelineRunNamespace
     description: The namespace where the CI job was executed
   resourcetemplates:
   - apiVersion: tekton.dev/v1alpha1
@@ -73,7 +73,7 @@ spec:
             check_status = "$(params.checkStatus)"
 
             if (check_status == "complete"):
-              logs_url = 'http://aftekton-dff43bc8701fcd5837d6de963718ad39-0000.eu-de.containers.appdomain.cloud/#/namespaces/$(params.taskRunNamespace)/taskruns/$(params.taskRunName)'
+              logs_url = 'http://aftekton-dff43bc8701fcd5837d6de963718ad39-0000.eu-de.containers.appdomain.cloud/#/namespaces/$(params.pipelineRunNamespace)/pipelineruns/$(params.pipelineRunName)'
               if ("$(params.checkResult)" == "True"):
                 check_status = "success"
               elif ("$(params.checkResult)" == "False"):
@@ -81,7 +81,7 @@ spec:
               else:
                 check_status = "error"
             else:
-              logs_url = 'http://aftekton-dff43bc8701fcd5837d6de963718ad39-0000.eu-de.containers.appdomain.cloud/#/namespaces/$(params.taskRunNamespace)/taskruns/$(params.taskRunName)'
+              logs_url = 'http://aftekton-dff43bc8701fcd5837d6de963718ad39-0000.eu-de.containers.appdomain.cloud/#/namespaces/$(params.pipelineRunNamespace)/pipelineruns/$(params.pipelineRunName)'
 
             # Build Status
             status_body = dict(
@@ -103,3 +103,34 @@ spec:
           - name: pr
             resourceRef:
               name: pr-$(params.checkStatus)-$(uid)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: debug-ce-events
+spec:
+  params:
+  - name: ceType
+    description: Type of Cloud Event
+  - name: resourceName
+    description: The name of the resource
+  - name: resourceNamespace
+    description: The namespace of the resource
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: TaskRun
+    metadata:
+      name: ce-events-debug-$(uid)
+      namespace: tektonci
+      annotations:
+        debug.tekton.dev/ce-type: $(params.ceType)
+        debug.tekton.dev/resource: $(params.resourceNamespace)/$(params.resourceName)
+    spec:
+      serviceAccountName: tekton-ci-jobs
+      taskSpec:
+        steps:
+        - name: debug
+          image: busybox
+          script: |
+            #!/bin/sh
+            echo "Received event $(params.ceType) for $(params.resourceNamespace)/$(params.resourceName)"
