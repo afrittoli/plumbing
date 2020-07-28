@@ -161,6 +161,10 @@ spec:
     description: Digest of the image just built.
 
   steps:
+  - name: hello-kubecon
+    image: busybox
+    script: |
+      echo 'Hello, KubeCon 2020 EU!'
   - name: build-and-push
     workingDir: /workspace/source
     image: $(params.BUILDER_IMAGE)
@@ -177,6 +181,7 @@ spec:
     - --destination=$(params.IMAGE)
     - --oci-layout-path=$(resources.inputs.source.path)/image-digest
     - --no-push
+    - --verbosity=error
     securityContext:
       runAsUser: 0
   - name: write-digest
