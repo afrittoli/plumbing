@@ -24,7 +24,7 @@ spec:
     script: |
       #!/bin/sh
       set -ex
-      echo "$(params.message)"
+      echo "Message: $(params.message)"
       echo
       sleep 120
       echo "Content of the repo:"
