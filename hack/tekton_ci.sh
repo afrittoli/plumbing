@@ -56,7 +56,7 @@ fi
 # The sed command injects your fork GitHub org in the CEL filters
 kustomize build tekton/ci | \
   sed -E 's/tektoncd(\/p[^i]+|\(|\/'\'')/'$GITHUB_ORG'\1/g' | \
-  kubectl create -f -
+  kubectl create -f - || true
 
 # Create the secret used by the GitHub interceptor
 kubectl create secret generic ci-webhook -n tektonci --from-literal=secret=$GITHUB_SECRET
